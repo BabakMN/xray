@@ -4,8 +4,8 @@ const $ = React.createElement;
 
 const Root = styled("div", {
   backgroundColor: "blue",
-  width: 500 + 'px',
-  height: 300 + 'px',
+  width: 500 + "px",
+  height: 300 + "px",
   padding: "10px"
 });
 
@@ -14,6 +14,14 @@ const QueryInput = styled("input", {
   boxSizing: "border-box"
 });
 
+const ResultList = styled("ul", {
+  width: "100%"
+});
+
+function Result(props) {
+  return $("li", {}, props.path)
+}
+
 module.exports = class FileFinder extends React.Component {
   constructor() {
     super();
@@ -21,12 +29,16 @@ module.exports = class FileFinder extends React.Component {
   }
 
   render() {
-    return $(Root, null,
+    return $(
+      Root,
+      null,
       $(QueryInput, {
-        $ref: (inputNode) => this.queryInput = inputNode,
-        value: this.props.query,
+        $ref: inputNode => (this.queryInput = inputNode),
+        key: 'input',
+        // value: this.props.query,
         onChange: this.didChangeQuery
-      })
+      }),
+      $(ResultList, {}, this.props.items.map(item => $(Result, item)))
     );
   }
 

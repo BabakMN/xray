@@ -1,7 +1,7 @@
 use xray_core::notify_cell::NotifyCell;
+use project::ProjectHandle;
 use serde_json;
 use std::cell::{RefCell, Ref, RefMut};
-use std::path::PathBuf;
 use std::rc::Rc;
 use window::{View, ViewUpdateStream, WindowHandle, ViewHandle};
 
@@ -9,7 +9,7 @@ use window::{View, ViewUpdateStream, WindowHandle, ViewHandle};
 pub struct WorkspaceHandle(Rc<RefCell<Workspace>>);
 
 pub struct Workspace {
-    paths: Vec<PathBuf>
+    project: ProjectHandle
 }
 
 pub struct WorkspaceView {
@@ -26,6 +26,7 @@ enum Action {
 }
 
 struct FileFinderView {
+    project: ProjectHandle,
     query: String,
     updates: NotifyCell<()>
 }
@@ -37,8 +38,8 @@ enum FileFinderAction {
 }
 
 impl WorkspaceHandle {
-    pub fn new(paths: Vec<PathBuf>) -> Self {
-        WorkspaceHandle(Rc::new(RefCell::new(Workspace::new(paths))))
+    pub fn new(project: ProjectHandle) -> Self {
+        WorkspaceHandle(Rc::new(RefCell::new(Workspace::new(project))))
     }
 
     pub fn borrow(&self) -> Ref<Workspace> {
@@ -51,8 +52,8 @@ impl WorkspaceHandle {
 }
 
 impl Workspace {
-    fn new(paths: Vec<PathBuf>) -> Self {
-        Self { paths }
+    fn new(project: ProjectHandle) -> Self {
+        Self { project }
     }
 }
 
@@ -100,7 +101,8 @@ impl WorkspaceView {
         if self.modal_panel.is_some() {
             self.modal_panel = None;
         } else {
-            self.modal_panel = Some(window_handle.add_view(FileFinderView::new()));
+            let project = self.workspace.borrow().project.clone();
+            self.modal_panel = Some(window_handle.add_view(FileFinderView::new(project)));
         }
         self.updates.set(());
     }
@@ -128,8 +130,9 @@ impl View for FileFinderView {
 }
 
 impl FileFinderView {
-    fn new() -> Self {
+    fn new(project: ProjectHandle) -> Self {
         Self {
+            project,
             query: String::new(),
             updates: NotifyCell::new(())
         }

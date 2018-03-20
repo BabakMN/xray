@@ -1,11 +1,13 @@
-mod messages;
-mod json_lines_codec;
 mod app;
+mod json_lines_codec;
+mod messages;
+mod project;
 mod window;
 mod workspace;
 
 extern crate bytes;
 extern crate futures;
+extern crate ignore;
 extern crate serde;
 #[macro_use]
 extern crate serde_derive;

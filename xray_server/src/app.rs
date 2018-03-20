@@ -1,6 +1,7 @@
 use futures::{Future, Stream, Sink};
 use futures::sync::mpsc;
 use messages::{IncomingMessage, OutgoingMessage};
+use project::ProjectHandle;
 use std::cell::RefCell;
 use std::collections::HashMap;
 use std::io;
@@ -158,7 +159,8 @@ impl Inner {
         let window_id = self.next_window_id;
         self.next_window_id += 1;
 
-        let workspace = WorkspaceHandle::new(paths);
+        let project = ProjectHandle::new(paths);
+        let workspace = WorkspaceHandle::new(project);
         let window = Window::new(workspace);
         self.windows.insert(window_id, window);
 

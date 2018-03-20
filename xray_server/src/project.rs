@@ -40,13 +40,15 @@ impl ProjectHandle {
             stack.truncate(0);
             for walk_entry in Walk::new(path) {
                 if let Ok(walk_entry) = walk_entry {
-                    let mut last_entry = None;
-                    while walk_entry.depth() < stack.len() {
-                        let mut entry = stack.pop().unwrap();
-                        last_entry.map(|last_entry| entry.push_child(last_entry));
-                        last_entry = Some(entry);
+                    {
+                        let mut entry = None;
+                        while walk_entry.depth() < stack.len() {
+                            let mut parent_entry = stack.pop().unwrap();
+                            entry.map(|entry| parent_entry.push_child(entry));
+                            entry = Some(parent_entry);
+                        }
+                        entry.map(|entry| stack.last_mut().unwrap().push_child(entry));
                     }
-                    last_entry.map(|entry| stack.last_mut().unwrap().push_child(entry));
 
                     let file_type = walk_entry.file_type().unwrap();
                     let file_name = walk_entry.file_name();
@@ -58,12 +60,12 @@ impl ProjectHandle {
                 }
             }
 
-            let mut root = stack.pop().unwrap();
-            while let Some(mut entry) = stack.pop() {
-                entry.push_child(root);
-                root = entry;
+            let mut entry = stack.pop().unwrap();
+            while let Some(mut parent_entry) = stack.pop() {
+                parent_entry.push_child(entry);
+                entry = parent_entry;
             }
-            inner.entries.push(root);
+            inner.entries.push(entry);
         }
     }
 }
